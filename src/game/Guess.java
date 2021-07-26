@@ -33,7 +33,38 @@ public class Guess {
 	}
 	
 	private boolean guessAttempt() {
+		//is a guess that isnt a solve attemp
 		//TODO this is where the logic of resolving a guess goes
+
+		if(!this.isSolve){
+			List<Player> players = Game.getPlayers();
+			for(Player p : players){
+				//needs to determine how many of the cards in the guess each player has
+				List<Card> correct = new ArrayList<Card>();
+				if(p.hasCard(character)){
+					correct.add(character);
+				}
+				if(p.hasCard(weapon)){
+					correct.add(weapon);
+				}
+				if(p.hasCard(location)){
+					correct.add(location);
+				}
+
+				if(correct.size() == 0){
+					System.out.println("Player" + p + " does not possess any of the guessed cards");
+					break;
+				}else if(correct.size() == 1){
+					Card c = correct.get(0);
+					System.out.println("Forcing player " + p + "to show card " + c);
+				}else if(correct.size() == 2){
+					System.out.println("Player " + p + " may choose from " + correct.get(0) + "and " + correct.get(1) + " to reaveal");
+				}
+
+			}
+		}else{
+			return false;
+		}
 		return false;
 	}
 	
