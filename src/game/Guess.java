@@ -2,12 +2,17 @@ package game;
 
 import cards.*;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.*;
+
 public class Guess {
 	
 	private CharacterCard character;
 	private LocationCard location;
 	private WeaponCard weapon;
 	private boolean isSolve;
+	public Player currentPlayer;
 	
 	/**
 	 * A guess object represents either an attempt to gain more information about the murder, or
@@ -17,11 +22,12 @@ public class Guess {
 	 * @param w The weapon being guessed
 	 * @param s True if this guess is an attempt to solve the murder and win the game; otherwise false
 	 */
-	public Guess(CharacterCard c, LocationCard l, WeaponCard w, boolean s) {
+	public Guess(CharacterCard c, LocationCard l, WeaponCard w, boolean s, Player currentPlayer) {
 		this.character = c;
 		this.location = l;
 		this.weapon = w;
 		this.isSolve = s;
+		this.currentPlayer = currentPlayer;
 	}
 	
 	public boolean execute() {
@@ -31,39 +37,56 @@ public class Guess {
 			return guessAttempt();
 		}
 	}
+
+	public void reveal(Card c, Player playerTo){
+		System.out.println("Card " + c + " is being revealed to " + playerTo);
+		System.out.println("Please ensure they have seen this screen before proceeding");
+;	}
 	
 	private boolean guessAttempt() {
-		//is a guess that isnt a solve attemp
-		//TODO this is where the logic of resolving a guess goes
+		Player currentPlayer = this.currentPlayer;
+		List<Player> players = Game.getPlayers();
+		List<Player> turnPassed = new ArrayList<Player>();
+		int startingIndex = 0;
+		boolean cont = true;
 
-		if(!this.isSolve){
-			List<Player> players = Game.getPlayers();
-			for(Player p : players){
-				//needs to determine how many of the cards in the guess each player has
-				List<Card> correct = new ArrayList<Card>();
-				if(p.hasCard(character)){
-					correct.add(character);
-				}
-				if(p.hasCard(weapon)){
-					correct.add(weapon);
-				}
-				if(p.hasCard(location)){
-					correct.add(location);
-				}
+		if(currentPlayer.name == "LUCILLA") {
+			startingIndex = 1;
+		}else if(currentPlayer.name == "BERT"){
+			startingIndex = 2;
+		}else if(currentPlayer.name == "MALINA"){
+			startingIndex = 3;
+		}else if(currentPlayer.name == "PERCY") {
+			startingIndex = 0;
+		}
 
-				if(correct.size() == 0){
-					System.out.println("Player" + p + " does not possess any of the guessed cards");
-					break;
-				}else if(correct.size() == 1){
-					Card c = correct.get(0);
-					System.out.println("Forcing player " + p + "to show card " + c);
-				}else if(correct.size() == 2){
-					System.out.println("Player " + p + " may choose from " + correct.get(0) + "and " + correct.get(1) + " to reaveal");
-				}
+		while(cont) {
+			for (int i = startingIndex; i < players.size(); i++) {
+				Player p = players.get(i);
+				Card revealedCard;
+				List<Card> guessedCardsInHand = getCorrectCards(p);
 
+				System.out.println("It is " + p.getName() + "'s turn. Please pass the tablet to them.");
+
+				if (guessedCardsInHand.size() == 0) {
+					System.out.println("You not have any of the guessed cards in their hand. Please pass the tablet to the next player.");
+				} else if (guessedCardsInHand.size() == 1) {
+					revealedCard = guessedCardsInHand.get(0);
+					System.out.println("You have only one of the guessed cards in your hand. You must show " + guessedCardsInHand.get(0));
+					reveal(revealedCard, currentPlayer);
+				} else if (guessedCardsInHand.size() == 2) {
+					System.out.println("You have 2 of the guessed cards in your hand. Which would you like to show? (Please select 1 or 2");
+					Scanner sc = new Scanner(System.in);
+					String line = sc.nextLine();
+					if(line.equals("1")){
+						revealedCard = guessedCardsInHand.get(0);
+						reveal(revealedCard, currentPlayer);
+					}else if(line.equals("2")){
+						revealedCard = guessedCardsInHand.get(1);
+						reveal(revealedCard, currentPlayer);
+					}
+				}
 			}
-		}else{
-			return false;
 		}
 		return false;
 	}
@@ -103,6 +126,20 @@ public class Guess {
 	 */
 	public boolean contains(Card c) {
 		return c.equals(character) || c.equals(location) || c.equals(weapon);
+	}
+
+	public List<Card> getCorrectCards(Player p){
+		List<Card> done = new ArrayList<Card>();
+		if(character.getPlayer().equals(p)){
+			done.add(character);
+		}
+		if(location.getPlayer().equals(p)){
+			done.add(location);
+		}
+		if(weapon.getPlayer().equals(p)){
+			done.add(weapon);
+		}
+		return done;
 	}
 	
 	/**
@@ -162,3 +199,4 @@ public class Guess {
 	}
 	
 }
+
