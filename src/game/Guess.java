@@ -1,18 +1,17 @@
 package game;
 
-import cards.*;
+import java.util.ArrayList;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.*;
+import cards.*;
 
 public class Guess {
 	
 	private CharacterCard character;
 	private LocationCard location;
 	private WeaponCard weapon;
+	private Player current;
+	private ArrayList<Player> players;
 	private boolean isSolve;
-	public Player currentPlayer;
 	
 	/**
 	 * A guess object represents either an attempt to gain more information about the murder, or
@@ -22,12 +21,13 @@ public class Guess {
 	 * @param w The weapon being guessed
 	 * @param s True if this guess is an attempt to solve the murder and win the game; otherwise false
 	 */
-	public Guess(CharacterCard c, LocationCard l, WeaponCard w, boolean s, Player currentPlayer) {
+	public Guess(CharacterCard c, LocationCard l, WeaponCard w, boolean s, Player current, ArrayList<Player> players) {
 		this.character = c;
 		this.location = l;
 		this.weapon = w;
 		this.isSolve = s;
-		this.currentPlayer = currentPlayer;
+		this.current = current;
+		this.players = players;
 	}
 	
 	public boolean execute() {
@@ -37,58 +37,33 @@ public class Guess {
 			return guessAttempt();
 		}
 	}
-
-	public void reveal(Card c, Player playerTo){
-		System.out.println("Card " + c + " is being revealed to " + playerTo);
-		System.out.println("Please ensure they have seen this screen before proceeding");
-;	}
 	
 	private boolean guessAttempt() {
-		Player currentPlayer = this.currentPlayer;
-		List<Player> players = Game.getPlayers();
-		List<Player> turnPassed = new ArrayList<Player>();
-		int startingIndex = 0;
-		boolean cont = true;
-
-		if(currentPlayer.name == "LUCILLA") {
-			startingIndex = 1;
-		}else if(currentPlayer.name == "BERT"){
-			startingIndex = 2;
-		}else if(currentPlayer.name == "MALINA"){
-			startingIndex = 3;
-		}else if(currentPlayer.name == "PERCY") {
-			startingIndex = 0;
-		}
-
-		while(cont) {
-			for (int i = startingIndex; i < players.size(); i++) {
-				Player p = players.get(i);
-				Card revealedCard;
-				List<Card> guessedCardsInHand = getCorrectCards(p);
-
-				System.out.println("It is " + p.getName() + "'s turn. Please pass the tablet to them.");
-
-				if (guessedCardsInHand.size() == 0) {
-					System.out.println("You not have any of the guessed cards in their hand. Please pass the tablet to the next player.");
-				} else if (guessedCardsInHand.size() == 1) {
-					revealedCard = guessedCardsInHand.get(0);
-					System.out.println("You have only one of the guessed cards in your hand. You must show " + guessedCardsInHand.get(0));
-					reveal(revealedCard, currentPlayer);
-				} else if (guessedCardsInHand.size() == 2) {
-					System.out.println("You have 2 of the guessed cards in your hand. Which would you like to show? (Please select 1 or 2");
-					Scanner sc = new Scanner(System.in);
-					String line = sc.nextLine();
-					if(line.equals("1")){
-						revealedCard = guessedCardsInHand.get(0);
-						reveal(revealedCard, currentPlayer);
-					}else if(line.equals("2")){
-						revealedCard = guessedCardsInHand.get(1);
-						reveal(revealedCard, currentPlayer);
-					}
-				}
+		//TODO this is where the logic of resolving a guess goes
+		ArrayList<Player> inTurnOrder = getPlayersInTurnOrder();
+		for(Player p : inTurnOrder) {
+			int numCards = getNumHeld(p);
+			if(numCards == 0) {
+				skipPlayer(p);
+			}else if(numCards == 1) {
+				
+			}else {
+				
 			}
 		}
 		return false;
+	}
+	
+	private void skipPlayer(Player p) {
+		
+	}
+	
+	private void showFromOne(Player p) {
+		
+	}
+	
+	private void showFromMultiple(Player p) {
+		
 	}
 	
 	private boolean solveAttempt() {
@@ -102,6 +77,25 @@ public class Guess {
 			return false;
 		}
 		return true;
+	}
+	
+	private ArrayList<Player> getPlayersInTurnOrder() {
+		ArrayList<Player> inTurnOrder = new ArrayList<Player>();
+		int index = current.getCharacter().ordinal();
+		//Set actual start to player after current
+		if(index == 3) {
+			index = 0;
+		}else {
+			index++;
+		}
+		while(inTurnOrder.size() < 3) {
+			inTurnOrder.add(players.get(index));
+			index++;
+			if(index > 3) {
+				index = 0;
+			}
+		}
+		return inTurnOrder;
 	}
 
 	@SuppressWarnings("javadoc")
@@ -126,20 +120,6 @@ public class Guess {
 	 */
 	public boolean contains(Card c) {
 		return c.equals(character) || c.equals(location) || c.equals(weapon);
-	}
-
-	public List<Card> getCorrectCards(Player p){
-		List<Card> done = new ArrayList<Card>();
-		if(character.getPlayer().equals(p)){
-			done.add(character);
-		}
-		if(location.getPlayer().equals(p)){
-			done.add(location);
-		}
-		if(weapon.getPlayer().equals(p)){
-			done.add(weapon);
-		}
-		return done;
 	}
 	
 	/**
@@ -199,4 +179,3 @@ public class Guess {
 	}
 	
 }
-

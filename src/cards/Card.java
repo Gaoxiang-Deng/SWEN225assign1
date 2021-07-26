@@ -29,10 +29,19 @@ public class Card implements Cloneable {
 		this.player = p;
 		this.value = v;
 	}
+	
+	public Card(String v) {
+		this.value = v;
+	}
 
 	@SuppressWarnings("javadoc")
 	public Player getPlayer() {
 		return player;
+	}
+	
+	@SuppressWarnings("javadoc")
+	public void setPlayer(Player p) {
+		this.player = p;
 	}
 
 	@SuppressWarnings("javadoc")

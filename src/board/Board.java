@@ -218,5 +218,9 @@ public class Board {
 		}
 		else return false;
 	}
+	
+	public Square getSquare(int x, int y) {
+		return squares[y][x];
+	}
 
 }

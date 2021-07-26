@@ -4,8 +4,14 @@ import game.Player;
 
 public class WeaponCard extends Card {
 	
-	public WeaponCard(Player p, String s) {
-		super(p, s);
+	public static enum Weapons {BROOM, SCISSORS, KNIFE, SHOVEL, IPAD}
+	
+	public WeaponCard(Player p, String v) {
+		super(p, v);
+	}
+	
+	public WeaponCard(String v) {
+		super(v);
 	}
 	
 	public WeaponCard clone() {

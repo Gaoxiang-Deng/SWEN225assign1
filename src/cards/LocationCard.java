@@ -8,6 +8,10 @@ public class LocationCard extends Card {
 		super(p, v);
 	}
 	
+	public LocationCard(String v) {
+		super(v);
+	}
+	
 	public LocationCard clone() {
 		return new LocationCard(this.player, this.value);
 	}
