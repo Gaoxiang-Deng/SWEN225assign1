@@ -41,11 +41,24 @@ public class Game {
 	
 	/**
 	 * This method handles the running of the game - each time through the loop is one player's turn.
+	 * @author Nelson
 	 */
 	private void run() {
 		while(!gameWon) {
-			//TODO basically the whole game
-		}
+            //TODO basically the whole game
+            int step = rollDice()[2];
+            for (int i = 0; i < step; i++) {
+                getMoveInput(currentPlayer);
+            }
+            Board board = new Board();
+            Square squares = board.getSquares(currentPlayer.getLocX(), currentPlayer.getLocY());
+            if(squares.getIsRoom()){
+                if(makeGuess(currentPlayer)){win();}
+                else{}
+            }else{
+                run();
+            }
+        }
 	}
 	
 	/**
