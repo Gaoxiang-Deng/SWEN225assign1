@@ -22,12 +22,13 @@ public class Guess {
 	 * @param w The weapon being guessed
 	 * @param s True if this guess is an attempt to solve the murder and win the game; otherwise false
 	 */
-	public Guess(CharacterCard c, LocationCard l, WeaponCard w, boolean s, Player current) {
+	public Guess(CharacterCard c, LocationCard l, WeaponCard w, boolean s, Player current, ArrayList<Player> players) {
 		this.character = c;
 		this.location = l;
 		this.weapon = w;
 		this.isSolve = s;
 		this.current = current;
+		this.players = players;
 	}
 	
 	public boolean execute() {
@@ -102,7 +103,7 @@ public class Guess {
 		
 	}
 	
-	public boolean solveAttempt() {
+	private boolean solveAttempt() {
 		if(character.getPlayer() != null) {
 			return false;
 		}
@@ -115,24 +116,7 @@ public class Guess {
 		return true;
 	}
 	
-	private ArrayList<Player> getPlayersInTurnOrder() {
-		ArrayList<Player> inTurnOrder = new ArrayList<Player>();
-		int index = current.getCharacter().ordinal();
-		//Set actual start to player after current
-		if(index == 3) {
-			index = 0;
-		}else {
-			index++;
-		}
-		while(inTurnOrder.size() < 3) {
-			inTurnOrder.add(players.get(index));
-			index++;
-			if(index > 3) {
-				index = 0;
-			}
-		}
-		return inTurnOrder;
-	}
+	
 
 	@SuppressWarnings("javadoc")
 	public CharacterCard getCharacter() {
@@ -212,6 +196,11 @@ public class Guess {
 		} else if (!weapon.equals(other.weapon))
 			return false;
 		return true;
+	}
+	
+	@Override
+	public String toString() {
+		return character.getValue() + " in the " + location.getValue() + " with the " + weapon.getValue();
 	}
 	
 }
