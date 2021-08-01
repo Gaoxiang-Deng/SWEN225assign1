@@ -14,9 +14,10 @@ import cards.*;
 public class Game {
 	
 	private boolean gameWon = false;
-	private ArrayList<Player> players;
+	private static ArrayList<Player> players;
 	private static Player currentPlayer;
 	private Board board;
+	private static Scanner scan = new Scanner(System.in);
 	
 	private HashMap<String, WeaponCard> weapons;
 	private HashMap<String, CharacterCard> characters;
@@ -41,24 +42,44 @@ public class Game {
 	
 	/**
 	 * This method handles the running of the game - each time through the loop is one player's turn.
-	 * @author Nelson
+	 * 
 	 */
 	private void run() {
 		while(!gameWon) {
-            //TODO basically the whole game
-            int step = rollDice()[2];
-            for (int i = 0; i < step; i++) {
-                getMoveInput(currentPlayer);
-            }
-            Board board = new Board();
-            Square squares = board.getSquares(currentPlayer.getLocX(), currentPlayer.getLocY());
-            if(squares.getIsRoom()){
-                if(makeGuess(currentPlayer)){win();}
-                else{}
-            }else{
-                run();
-            }
-        }
+			//roll dice
+			int[] rolls = rollDice();
+			System.out.printf("%s rolled a %d and %d, for a total of %d.", currentPlayer.getName(), rolls[0], rolls[1], rolls[2]);
+			//move
+			for(int i = rolls[2]; i > 0; i--) {
+				if(!getMoveInput(currentPlayer)) { //asking for move input and checking if valid
+					i++; //if invalid, increment i to ask again
+				}
+			}
+			Square currentPlayerLocation = board.getSquare(currentPlayer.getLocX(), currentPlayer.getLocY());
+			//in order to guess or solve, players must be in a room and not have previously failed a solve attempt
+			//computer players don't guess or solve
+			if(!currentPlayer.isComp() && currentPlayerLocation.getIsRoom() && !currentPlayer.getFailedSolve()) {
+				makeGuess(currentPlayer);
+				boolean cont = true;
+				while(cont) {
+					int result = askForSolve(currentPlayer);
+					if(result == 0) {
+						cont = false;
+						break;
+					}else if(result == 1) {
+						if(makeSolve(currentPlayer)) {
+							//win
+						}else {
+							currentPlayer.setFailedSolve();
+						}
+						cont = false;
+					}
+				}
+			}
+			//end turn - pass to next player
+			handOverTablet(currentPlayer, getNextPlayer());
+			currentPlayer = getNextPlayer();
+		}
 	}
 	
 	/**
@@ -66,20 +87,19 @@ public class Game {
 	 * @return The number of players, or 0 if there is an error.
 	 */
 	private int getNumPlayers() {
-		Scanner scan = new Scanner(System.in);
 		System.out.println("How many people are playing? Please enter a number from 2 to 4.");
-		if(!scan.hasNextInt()) {
+		String input = scan.nextLine();
+		int numPlayers = 0;
+		try {
+			numPlayers = Integer.parseInt(input);
+		}catch(NumberFormatException e) {//input is not an int
 			System.out.println("Error - please enter a numeral (no decimals).");
-			scan.close();
 			return 0;
 		}
-		int numPlayers = scan.nextInt();
 		if(numPlayers < 2 || numPlayers > 4) {
 			System.out.println("Error - number of players must be between 2 and 4 (inclusive).");
-			scan.close();
 			return 0;
 		}
-		scan.close();
 		return numPlayers;
 	}
 	
@@ -92,7 +112,6 @@ public class Game {
 	private ArrayList<Player> createPlayers(int numPlayers) {
 		ArrayList<Player> players = new ArrayList<Player>();
 		Player.Character[] characters = Player.Character.values();
-		Scanner scan = new Scanner(System.in);
 		for(int i = 0; i < 4; i++) {
 			if(i < numPlayers) { //Player is human
 				System.out.printf("Player %d, please enter your name:\n", i);
@@ -106,7 +125,6 @@ public class Game {
 				players.add(new Player(name, characters[i], true));
 			}
 		}
-		scan.close();
 		return players;
 	}
 	
@@ -182,7 +200,7 @@ public class Game {
 				Player p = players.get(dealTo);
 				top.setPlayer(p);
 				p.giveCard(top);
-				if(dealTo == 4) {
+				if(dealTo == 3) {
 					dealTo = 0;
 				}else {
 					dealTo++;
@@ -224,7 +242,6 @@ public class Game {
 	 * @return
 	 */
 	private boolean getMoveInput(Player player) {
-		Scanner scan = new Scanner(System.in);
 		boolean validMove = false;
 		System.out.print("Enter a direction to move: ");
 		String next = scan.nextLine();
@@ -260,22 +277,56 @@ public class Game {
 	}
 	
 	/**
-	 * INCOMPLETE!
-	 * @param p
+	 * Asks the player if they would like to make a solve attempt
+	 * @param p The player who may solve
+	 * @return 1 if yes, 0 if no, -1 if error
 	 */
-	public static void handOverTablet(Player p) {
-		System.out.printf("%s, please pass the tablet to %s.", currentPlayer.getName(), p.getName());
-		System.out.printf("%s, please confim you have the tablet.", p.getName());
+	private int askForSolve(Player p) {
+		System.out.printf("%s, would you like to make a solve attempt? Y/N", p.getName());
+		String next = scan.nextLine();
+		if(next.equalsIgnoreCase("Y") || next.equalsIgnoreCase("yes")) {
+			return 1;
+		}else if(next.equalsIgnoreCase("N") || next.equalsIgnoreCase("no")) {
+			return 0;
+		}
+		System.out.println("Invalid entry - please try again.");
+		return -1; //invalid input or parse error
+	}
+	
+	private boolean makeSolve(Player p) {
+		return false;
+	}
+	
+	/**
+	 * Called at end of turn to pass to the next player. Also called by the Guess class, to enable refutations
+	 * when a player is guessing.
+	 * @param p1 The player passing the tablet
+	 * @param p2 The player to who the tablet is being passed
+	 */
+	public static void handOverTablet(Player p1, Player p2) {
+		System.out.printf("%s, please pass the tablet to %s.", p1.getName(), p2.getName());
+		System.out.printf("%s, please confim you have the tablet.", p2.getName());
+		scan.nextLine(); //user must enter something to confirm - but can enter anything
 	}
 	
 	/**
 	 * Called when a player wins the game. Displays a congratulatory message and the correct
 	 * solution, then ends the game.
+	 * @param p The winning player
+	 * @param g The winning guess
 	 */
-	private void win() {
+	private void win(Player p, Guess g) {
+		System.out.printf("%s is the winner!\n", p.getName());
+		System.out.printf("The correct solution was: %s in the %s with the %s.\n", g.getCharacter().getValue(), g.getLocation().getValue(), g.getWeapon().getValue());
 		gameWon = true;
+		scan.close();
 	}
 	
+	/**
+	 * Given a Character, returns the Player controlling that Character
+	 * @param c
+	 * @return The Player object whose Character is c
+	 */
 	public Player getPlayerFromCharacter(Player.Character c) {
 		for(Player p : players) {
 			if(p.isCharacter(c)) {
@@ -285,7 +336,22 @@ public class Game {
 		throw new IllegalArgumentException("Could not find player with character " + c.toString());
 	}
 	
-	public ArrayList<Player> getPlayers() {
+	/**
+	 * Finds the next player in turn order
+	 * @return The Player object representing the next player in turn order
+	 */
+	private Player getNextPlayer() {
+		int pos = currentPlayer.getCharacter().ordinal();
+		Player.Character[] characters = Player.Character.values();
+		if(pos == characters.length -1) {
+			pos = 0;
+		}else {
+			pos++;
+		}
+		return getPlayerFromCharacter(characters[pos]);
+	}
+	
+	public static ArrayList<Player> getPlayers() {
 		return players;
 	}
 

@@ -1,6 +1,7 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import cards.*;
 
@@ -39,19 +40,19 @@ public class Guess {
 	}
 	
 	private boolean guessAttempt() {
-		Player currentPlayer = this.currentPlayer;
-		List<Player> players = Game.getPlayers();
-		List<Player> turnPassed = new ArrayList<Player>();
+		Player currentPlayer = this.current;
+		ArrayList<Player> players = Game.getPlayers();
+		ArrayList<Player> turnPassed = new ArrayList<Player>();
 		int startingIndex = 0;
 		boolean cont = true;
 
-		if(currentPlayer.name == "LUCILLA") {
+		if(currentPlayer.getCharacter() == Player.Character.LUCILLA) {
 			startingIndex = 1;
-		}else if(currentPlayer.name == "BERT"){
+		}else if(currentPlayer.getCharacter() == Player.Character.BERT){
 			startingIndex = 2;
-		}else if(currentPlayer.name == "MALINA"){
+		}else if(currentPlayer.getCharacter() == Player.Character.MALINA){
 			startingIndex = 3;
-		}else if(currentPlayer.name == "PERCY") {
+		}else if(currentPlayer.getCharacter() == Player.Character.PERCY) {
 			startingIndex = 0;
 		}
 
@@ -59,7 +60,7 @@ public class Guess {
 			for (int i = startingIndex; i < players.size(); i++) {
 				Player p = players.get(i);
 				Card revealedCard;
-				List<Card> guessedCardsInHand = getCorrectCards(p);
+				ArrayList<Card> guessedCardsInHand = getCorrectCards(p);
 
 				System.out.println("It is " + p.getName() + "'s turn. Please pass the tablet to them.");
 
@@ -85,6 +86,10 @@ public class Guess {
 		}
 		return false;
 	}
+	
+	private ArrayList<Card> getCorrectCards(Player p) {return null;}
+	
+	private void reveal(Card c, Player p) {}
 	
 	private void skipPlayer(Player p) {
 		

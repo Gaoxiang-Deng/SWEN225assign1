@@ -83,6 +83,21 @@ public class Player {
 		locY = y;
 	}
 	
+	public boolean isComp() {
+		return isComp;
+	}
+	
+	public boolean getFailedSolve() {
+		return failedSolve;
+	}
+	
+	/**
+	 * Called when a player makes a solve attempt that is incorrect.
+	 */
+	public void setFailedSolve() {
+		failedSolve = true;
+	}
+	
 	/**
 	 * Using this is inefficient - Cards know which player holds them.
 	 * @param c
