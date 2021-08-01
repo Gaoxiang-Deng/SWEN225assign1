@@ -59,15 +59,17 @@ public class Game {
 			//in order to guess or solve, players must be in a room and not have previously failed a solve attempt
 			//computer players don't guess or solve
 			if(!currentPlayer.isComp() && currentPlayerLocation.getIsRoom() && !currentPlayer.getFailedSolve()) {
-				makeGuess(currentPlayer);
+				Guess guess;
 				boolean cont = true;
 				while(cont) {
 					int result = askForSolve(currentPlayer);
 					if(result == 0) {
 						cont = false;
+						guess = makeGuess(currentPlayer, false);
 						break;
 					}else if(result == 1) {
-						if(makeSolve(currentPlayer)) {
+						guess = makeGuess(currentPlayer, true);
+						if(guess.solveAttempt()) {
 							//win
 						}else {
 							currentPlayer.setFailedSolve();
@@ -173,7 +175,7 @@ public class Game {
 		CharacterCard solveCharacter = (CharacterCard) getRandomFromSet(characters.values());
 		LocationCard solveLocation = (LocationCard) getRandomFromSet(locations.values());
 		WeaponCard solveWeapon = (WeaponCard) getRandomFromSet(weapons.values());
-		return new Guess(solveCharacter, solveLocation, solveWeapon, false, currentPlayer, players);
+		return new Guess(solveCharacter, solveLocation, solveWeapon, false, null);
 	}
 	
 	/**
@@ -272,8 +274,46 @@ public class Game {
 	 * @param p The player making the guess
 	 * @return True if the guess was a successful solve attempt; otherwise false.
 	 */
-	private boolean makeGuess(Player p) {
-		return false;
+	private Guess makeGuess(Player p, boolean isSolve) {
+		System.out.println(p.getName() + ", make your guess!")
+
+		//Character
+		System.out.println("Please choose a character:");
+		ArrayList<String> charNames = new ArrayList<>();
+		for(Player.Character c : Player.Character.values()){
+			System.out.print(c.name() + " ");
+			charNames.add(c.name());
+		}
+		boolean validName = false;
+		String next;
+		while(!validName){
+			next = scan.nextLine();
+			if(charNames.contains(next.toUpperCase())){
+				validName = true;
+			}
+		}
+		CharacterCard cc = characters.get(next.toUpperCase());
+
+		//Weapon
+		System.out.println("Please choose a weapon:");
+		ArrayList<String> weaponNames = new ArrayList<>();
+		for(WeaponCard.Weapons w : WeaponCard.Weapons.values()){
+			System.out.print(w.name() + " ");
+			weaponNames.add(w.name());
+		}
+		validName = false;
+		while(!validName){
+			next = scan.nextLine();
+			if(weaponNames.contains(next.toUpperCase())){
+				validName = true;
+			}
+		}
+		WeaponCard wc = weapons.get(next.toUpperCase());
+
+		//Location (room that player is in!)
+		LocationCard lc = locations.get(board.getSquare(p.locX, p.locY).getRoom().name());
+
+		return new Guess(cc, lc, wc, isSolve, p);
 	}
 	
 	/**
@@ -291,10 +331,6 @@ public class Game {
 		}
 		System.out.println("Invalid entry - please try again.");
 		return -1; //invalid input or parse error
-	}
-	
-	private boolean makeSolve(Player p) {
-		return false;
 	}
 	
 	/**

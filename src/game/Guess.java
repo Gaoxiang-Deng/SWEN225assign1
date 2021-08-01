@@ -22,13 +22,12 @@ public class Guess {
 	 * @param w The weapon being guessed
 	 * @param s True if this guess is an attempt to solve the murder and win the game; otherwise false
 	 */
-	public Guess(CharacterCard c, LocationCard l, WeaponCard w, boolean s, Player current, ArrayList<Player> players) {
+	public Guess(CharacterCard c, LocationCard l, WeaponCard w, boolean s, Player current) {
 		this.character = c;
 		this.location = l;
 		this.weapon = w;
 		this.isSolve = s;
 		this.current = current;
-		this.players = players;
 	}
 	
 	public boolean execute() {
@@ -103,7 +102,7 @@ public class Guess {
 		
 	}
 	
-	private boolean solveAttempt() {
+	public boolean solveAttempt() {
 		if(character.getPlayer() != null) {
 			return false;
 		}
