@@ -47,11 +47,11 @@ public class Game {
 	 * 
 	 */
 	private void run() {
-		if (!currentPlayer.isComp()) {
-			while (!gameWon) {
+		while (!gameWon) {
+			if (!currentPlayer.isComp()) {
 				// roll dice
 				int[] rolls = rollDice();
-				System.out.printf("%s rolled a %d and %d, for a total of %d.", currentPlayer.getName(), rolls[0],
+				System.out.printf("%s rolled a %d and %d, for a total of %d.\n", currentPlayer.getName(), rolls[0],
 						rolls[1], rolls[2]);
 				// move
 				for (int i = rolls[2]; i > 0; i--) {
@@ -72,8 +72,9 @@ public class Game {
 							cont = false;
 							break;
 						} else if (result == 1) {
-							if (makeSolve(currentPlayer)) {
-								// win
+							Guess solve = makeGuess(currentPlayer);
+							if (solve.processSolve()) {
+								win(currentPlayer, solve);
 							} else {
 								currentPlayer.setFailedSolve();
 							}
@@ -81,10 +82,10 @@ public class Game {
 						}
 					}
 				}
-				// end turn - pass to next player
-				handOverTablet(currentPlayer, getNextPlayer());
-				currentPlayer = getNextPlayer();
 			}
+			// end turn - pass to next player
+			handOverTablet(currentPlayer, getNextPlayer());
+			currentPlayer = getNextPlayer();
 		}
 	}
 
@@ -124,13 +125,13 @@ public class Game {
 		Player.Character[] characters = Player.Character.values();
 		for (int i = 0; i < 4; i++) {
 			if (i < numPlayers) { // Player is human
-				System.out.printf("Player %d, please enter your name:\n", i);
+				System.out.printf("Player %d, please enter your name:\n", i+1);
 				String name = scan.nextLine();
-				System.out.printf("Thank you, %s. As Player %d, you will control %s.\n", name, i, characters[i].name());
+				System.out.printf("Thank you, %s. As Player %d, you will control %s.\n", name, i+1, characters[i].name());
 				players.add(new Player(name, characters[i], false));
 				System.out.println("Please pass control to the next player.");
 			} else { // Player is computer
-				System.out.printf("Player %d, controlling %s, will be played by the computer.", i,
+				System.out.printf("Player %d, controlling %s, will be played by the computer.\n", i+1,
 						characters[i].name());
 				String name = "COMP" + i;
 				players.add(new Player(name, characters[i], true));
@@ -185,7 +186,7 @@ public class Game {
 		CharacterCard solveCharacter = (CharacterCard) getRandomFromSet(characters.values());
 		LocationCard solveLocation = (LocationCard) getRandomFromSet(locations.values());
 		WeaponCard solveWeapon = (WeaponCard) getRandomFromSet(weapons.values());
-		return new Guess(solveCharacter, solveLocation, solveWeapon, false, currentPlayer, players);
+		return new Guess(solveCharacter, solveLocation, solveWeapon);
 	}
 
 	/**
@@ -233,9 +234,15 @@ public class Game {
 	 * @return A random card from the set.
 	 */
 	private Card getRandomFromSet(Collection<? extends Card> set) {
-		Card[] cards = (Card[]) set.toArray();
-		int random = ThreadLocalRandom.current().nextInt(0, cards.length);
-		return cards[random];
+		int random = ThreadLocalRandom.current().nextInt(0, set.size());
+		int count = 0;
+		for(Card c : set) {
+			if(count == random) {
+				return c;
+			}
+			count++;
+		}
+		return null; //should be unreachable
 	}
 
 	/**
@@ -265,16 +272,16 @@ public class Game {
 		System.out.print("Enter a direction to move: ");
 		String next = scan.nextLine();
 		next = next.toLowerCase();
-		if (next == "u" || next == "up" || next == "n" || next == "north") {
+		if (Board.Direction.UP.getFromString(next)) {
 			if (board.move(player, Board.Direction.UP))
 				return true;
-		} else if (next == "r" || next == "right" || next == "e" || next == "east") {
+		} else if (Board.Direction.RIGHT.getFromString(next)) {
 			if (board.move(player, Board.Direction.RIGHT))
 				return true;
-		} else if (next == "d" || next == "down" || next == "s" || next == "south") {
+		} else if (Board.Direction.DOWN.getFromString(next)) {
 			if (board.move(player, Board.Direction.DOWN))
 				return true;
-		} else if (next == "l" || next == "left" || next == "w" || next == "west") {
+		} else if (Board.Direction.LEFT.getFromString(next)) {
 			if (board.move(player, Board.Direction.LEFT))
 				return true;
 		} else {
@@ -293,8 +300,46 @@ public class Game {
 	 * @param p The player making the guess
 	 * @return True if the guess was a successful solve attempt; otherwise false.
 	 */
-	private boolean makeGuess(Player p) {
-		return false;
+	private Guess makeGuess(Player p) {
+		System.out.println(p.getName() + ", make your guess!");
+
+		//Character
+		System.out.println("Please choose a character:");
+		ArrayList<String> charNames = new ArrayList<String>();
+		for(Player.Character c : Player.Character.values()){
+			System.out.print(c.name() + " ");
+			charNames.add(c.name());
+		}
+		boolean validName = false;
+		String next = scan.nextLine();
+		while(!validName){
+			if(charNames.contains(next.toUpperCase())){
+				validName = true;
+			}
+			next = scan.nextLine();
+		}
+		CharacterCard cc = characters.get(next.toUpperCase());
+
+		//Weapon
+		System.out.println("Please choose a weapon:");
+		ArrayList<String> weaponNames = new ArrayList<String>();
+		for(WeaponCard.Weapons w : WeaponCard.Weapons.values()){
+			System.out.print(w.name() + " ");
+			weaponNames.add(w.name());
+		}
+		validName = false;
+		while(!validName){
+			next = scan.nextLine();
+			if(weaponNames.contains(next.toUpperCase())){
+				validName = true;
+			}
+		}
+		WeaponCard wc = weapons.get(next.toUpperCase());
+
+		//Location (room that player is in!)
+		LocationCard lc = locations.get(board.getSquare(p.locX, p.locY).getRoom().name());
+
+		return new Guess(cc, lc, wc);
 	}
 	
 	private void processGuess(Guess g) {
@@ -370,10 +415,6 @@ public class Game {
 		return -1; // invalid input or parse error
 	}
 
-	private boolean makeSolve(Player p) {
-		return false;
-	}
-
 	/**
 	 * Called whenever the tablet needs to be passed from one player to another - 
 	 * Generally when guessing or at end of turn.
@@ -382,8 +423,8 @@ public class Game {
 	 * @param p2 The player to who the tablet is being passed
 	 */
 	public static void handOverTablet(Player p1, Player p2) {
-		System.out.printf("%s, please pass the tablet to %s.", p1.getName(), p2.getName());
-		System.out.printf("%s, please confim you have the tablet.", p2.getName());
+		System.out.printf("%s, please pass the tablet to %s.\n", p1.getName(), p2.getName());
+		System.out.printf("%s, please confim you have the tablet.\n", p2.getName());
 		scan.nextLine(); // user must enter something to confirm - but can enter anything
 	}
 

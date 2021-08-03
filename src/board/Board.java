@@ -8,7 +8,22 @@ import game.*;
 public class Board {
 
 	public static enum Direction {
-		UP, DOWN, LEFT, RIGHT
+		UP("u", "up", "n", "north"), DOWN("d", "down", "s", "south"), LEFT("l", "left", "w", "west"), RIGHT("r", "right", "e", "east");
+		
+		private String[] inputs;
+		
+		private Direction(String...strings) {
+			this.inputs = strings;
+		}
+		
+		public boolean getFromString(String input) {
+			for(String s : inputs) {
+				if(s.equals(input)) {
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 
 	private Square[][] squares;
@@ -65,49 +80,50 @@ public class Board {
 
 		
 		// and this string layout is converted into actual walls inside square objects
-		for(int x = 0; x < 24; x++) {
-			for(int y = 0; y < 24; y++){
+		for(int y = 0; y < 24; y++) {
+			for(int x = 0; x < 24; x++){
+				squares[y][x] = new Square();
 				char curr = s.charAt(y*24 + x);
-				if(curr == 'u') squares[x][y].setUp(false);
-				else if(curr == 'l') squares[x][y].setLeft(false);
-				else if(curr == 'd') squares[x][y].setDown(false);
-				else if(curr == 'r') squares[x][y].setRight(false);
+				if(curr == 'u') squares[y][x].setUp(false);
+				else if(curr == 'l') squares[y][x].setLeft(false);
+				else if(curr == 'd') squares[y][x].setDown(false);
+				else if(curr == 'r') squares[y][x].setRight(false);
 				else if(curr == 'q') {
-					squares[x][y].setUp(false);
-					squares[x][y].setLeft(false);
+					squares[y][x].setUp(false);
+					squares[y][x].setLeft(false);
 				}
 				else if(curr == 'p') {
-					squares[x][y].setUp(false);
-					squares[x][y].setRight(false);
+					squares[y][x].setUp(false);
+					squares[y][x].setRight(false);
 				}
 				else if(curr == 'z') {
-					squares[x][y].setDown(false);
-					squares[x][y].setLeft(false);
+					squares[y][x].setDown(false);
+					squares[y][x].setLeft(false);
 				}
 				else if(curr == 'm') {
-					squares[x][y].setDown(false);
-					squares[x][y].setRight(false);
+					squares[y][x].setDown(false);
+					squares[y][x].setRight(false);
 				}
 				
 				if((x > 2 && x < 6) && (y > 2 && y < 6)) {
-					squares[x][y].setIsRoom();
-					squares[x][y].setRoom(Room.HAUNTED_HOUSE);
+					squares[y][x].setIsRoom();
+					squares[y][x].setRoom(Room.HAUNTED_HOUSE);
 				}
 				else if((x > 17 && x < 21) && (y > 2 && y < 6)) {
-					squares[x][y].setIsRoom();
-					squares[x][y].setRoom(Room.MANIC_MANOR);
+					squares[y][x].setIsRoom();
+					squares[y][x].setRoom(Room.MANIC_MANOR);
 				}
 				else if((x > 2 && x < 6) && (y > 17 && y < 21)) {
-					squares[x][y].setIsRoom();
-					squares[x][y].setRoom(Room.CALAMITY_CASTLE);
+					squares[y][x].setIsRoom();
+					squares[y][x].setRoom(Room.CALAMITY_CASTLE);
 				}
 				else if((x > 17 && x < 21) && (y > 17 && y < 21)) {
-					squares[x][y].setIsRoom();
-					squares[x][y].setRoom(Room.PERIL_PALACE);
+					squares[y][x].setIsRoom();
+					squares[y][x].setRoom(Room.PERIL_PALACE);
 				}
 				else if((x > 9 && x < 14) && (y > 10 && y < 13)) {
-					squares[x][y].setIsRoom();
-					squares[x][y].setRoom(Room.VILLA_CELIA);
+					squares[y][x].setIsRoom();
+					squares[y][x].setRoom(Room.VILLA_CELIA);
 				}
 				
 			}
@@ -211,7 +227,7 @@ public class Board {
 			return curr.getLeft();
 		}
 		else if(direction == Direction.RIGHT) {
-			if(player.getLocX()+1 < 23) return false;
+			if(player.getLocX()+1 > 23) return false;
 			if (squares[player.getLocX() + 1][player.getLocY()].getPlayer() != null)
 				return false;
 			return curr.getRight();

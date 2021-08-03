@@ -1,5 +1,6 @@
 package game;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import cards.Card;
@@ -113,6 +114,43 @@ public class Player {
 	 */
 	public void giveCard(Card c) {
 		hand.add(c);
+	}
+	
+	public Card chooseCardToShow(Guess guess){
+		ArrayList<Card> cards = new ArrayList<>();
+		if(hasCard(guess.getCharacter())) cards.add(guess.getCharacter());
+		if(hasCard(guess.getWeapon())) cards.add(guess.getWeapon());
+		if(hasCard(guess.getLocation())) cards.add(guess.getLocation());
+
+		System.out.println("You have the following cards:");
+		for(int i = 0; i < cards.size(); i++){
+			System.out.println(i + ": " + cards.get(i).getValue());
+		}
+		System.out.println("Choose the number of the card you'd like to show the guesser:");
+
+		String next = "";
+		int index = -1;
+		boolean validCard = false;
+		while(!validCard){
+			next = Game.scan.nextLine();
+			try{
+				index = Integer.parseInt(next);
+			}
+			catch(Exception e){
+				System.out.println("Please input a valid number");
+			}
+			if(index > 0 && index < cards.size()+1){
+				validCard = true;
+			}
+			else{
+				System.out.println("Please input a valid number");
+				System.out.println("You have the following cards:");
+				for (int i = 0; i < cards.size(); i++) {
+					System.out.println(i + ": " + cards.get(i).getValue());
+				}
+			}
+		}
+		return cards.get(index-1);
 	}
 	
 	/**
