@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import board.Board;
+import board.Board.Direction;
 import cards.Card;
 import game.Player;
 
@@ -28,6 +29,10 @@ public class Subject {
      * @return the current player
      */
     public Player getPlayer() {
+        return null;
+    }
+
+    public ArrayList<Player> getAllPlayers() {
         return null;
     }
     
@@ -60,5 +65,8 @@ public class Subject {
         for (Observer observer : observers) {
             observer.update();
         }
+    }
+
+    public void moveCharacter(Direction dir) {
     }
 }

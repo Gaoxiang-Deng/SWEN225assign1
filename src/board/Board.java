@@ -105,23 +105,23 @@ public class Board {
 					squares[y][x].setRight(false);
 				}
 				
-				if((x > 2 && x < 6) && (y > 2 && y < 6)) {
+				if((x >= 2 && x <= 6) && (y >= 2 && y <= 6)) {
 					squares[y][x].setIsRoom();
 					squares[y][x].setRoom(Room.HAUNTED_HOUSE);
 				}
-				else if((x > 17 && x < 21) && (y > 2 && y < 6)) {
+				else if((x >= 17 && x <= 21) && (y >= 2 && y <= 6)) {
 					squares[y][x].setIsRoom();
 					squares[y][x].setRoom(Room.MANIC_MANOR);
 				}
-				else if((x > 2 && x < 6) && (y > 17 && y < 21)) {
+				else if((x >= 2 && x <= 6) && (y >= 17 && y <= 21)) {
 					squares[y][x].setIsRoom();
 					squares[y][x].setRoom(Room.CALAMITY_CASTLE);
 				}
-				else if((x > 17 && x < 21) && (y > 17 && y < 21)) {
+				else if((x >= 17 && x <= 21) && (y >= 17 && y <= 21)) {
 					squares[y][x].setIsRoom();
 					squares[y][x].setRoom(Room.PERIL_PALACE);
 				}
-				else if((x > 9 && x < 14) && (y > 10 && y < 13)) {
+				else if((x >= 9 && x <= 14) && (y >= 10 && y <= 13)) {
 					squares[y][x].setIsRoom();
 					squares[y][x].setRoom(Room.VILLA_CELIA);
 				}
@@ -142,7 +142,7 @@ public class Board {
 	 * @return False if move is impossible, else true
 	 */
 	public boolean move(Player player, Board.Direction direction) {
-		
+
 		int x = player.getLocX();
 		int y = player.getLocY();
 		if(!canMove(player, direction)) return false;

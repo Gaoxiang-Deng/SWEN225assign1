@@ -32,17 +32,30 @@ package GUI;
  */
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextPane;
+
+import game.Player;
 
 public class GUI {
 
     static Subject subject;
+    public static final int width = 1150;
+    public static final int height = 900;
 
     public GUI(Subject subject){
         GUI.subject = subject;
@@ -64,7 +77,7 @@ public class GUI {
 
 
         GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.BOTH;
+        c.fill = GridBagConstraints.VERTICAL;
         menu = new JMenu("Menu");
         JMenuItem quitButton = new JMenuItem("Quit");
         quitButton.setToolTipText("Quit application");
@@ -101,7 +114,7 @@ public class GUI {
         c = new GridBagConstraints();
         JPanel infoPane = new JPanel();
         infoPane.add(new JButton("Various info and buttons here!"));
-        c.fill = GridBagConstraints.VERTICAL;
+        c.fill = GridBagConstraints.BOTH;
         c.weightx = 0;
         c.weighty = 0;
         c.gridx = 0;
@@ -137,10 +150,43 @@ public class GUI {
 
         // Set up the content pane.
         addComponentsToPane(frame.getContentPane());
-        frame.setSize(1200, 800);
+        frame.setSize(width, height);
 
         // Display the window.
         //frame.pack();
         frame.setVisible(true);
+    }
+
+    public String inputDialog(String text){
+        String s = (String) JOptionPane.showInputDialog(text, JOptionPane.PLAIN_MESSAGE);
+        // If a string was returned, say so.
+        if ((s != null) && (s.length() > 0)) {
+            return s;
+        }
+        return s;
+    }
+
+    public String inputDialog(String text, Object... args) {
+        text = String.format(text, args);
+        String s = (String) JOptionPane.showInputDialog(text, JOptionPane.PLAIN_MESSAGE);
+        // If a string was returned, say so.
+        if ((s != null) && (s.length() > 0)) {
+            return s;
+        }
+        return s;
+    }
+
+    public void messageDialog(String text) {
+        JOptionPane.showConfirmDialog(null, text, "Message", 2);
+    }
+
+    public void messageDialog(String text, Object... args) {
+        text = String.format(text, args);
+        JOptionPane.showConfirmDialog(null, text, "Message", 2);
+    }
+
+    public Player.Character radioButton(String text){
+        RadioButton rb = new RadioButton(text);
+        return rb.show();
     }
 }

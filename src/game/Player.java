@@ -1,6 +1,8 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 
 import cards.Card;
@@ -11,11 +13,12 @@ public class Player {
 	 * The names of the characters in the game. Their order also serves as the turn order.
 	 * @author Michael
 	 */
-	enum Character {
+	public enum Character {
 		LUCILLA(11, 1), BERT(1, 9), MALINA(9, 22), PERCY(22, 14);
 		
 		private int startX;
 		private int startY;
+		private boolean selected = false;
 		
 		/**
 		 * The four characters in Murder Madness, each controlled by a player
@@ -34,6 +37,14 @@ public class Player {
 		public int getY() {
 			return startY;
 		}
+
+		public void setSelected(boolean selected){
+			this.selected = selected;
+		}
+
+		public boolean getSelected() {
+			return selected;
+		}
 	}
 	
 	private HashSet<Card> hand = new HashSet<Card>();
@@ -45,6 +56,8 @@ public class Player {
 	//The Player's location on the board, as x and y coordinates.
 	int locX;
 	int locY;
+
+	public Player(){}
 	
 	public Player(String name, Character c, boolean isComp) {
 		this.name = name;
@@ -90,6 +103,10 @@ public class Player {
 	
 	public boolean getFailedSolve() {
 		return failedSolve;
+	}
+
+	public Collection<Card> getHand(){
+		return Collections.unmodifiableCollection(hand);
 	}
 	
 	/**

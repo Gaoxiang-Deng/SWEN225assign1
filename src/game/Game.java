@@ -1,5 +1,6 @@
 package game;
 
+import java.sql.Time;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +15,7 @@ import java.util.stream.Stream;
 import GUI.GUI;
 import GUI.Subject;
 import board.*;
+import board.Board.Direction;
 import cards.*;
 
 public class Game extends Subject{
@@ -21,17 +23,20 @@ public class Game extends Subject{
 	private boolean gameWon = false;
 	private static ArrayList<Player> players;
 	private static Player currentPlayer;
+	private static int currRoll;
 	private Board board;
 	public static Scanner scan = new Scanner(System.in);
 	public String currText;
+	static GUI gui;
 
 	private HashMap<String, WeaponCard> weapons;
 	private HashMap<String, CharacterCard> characters;
 	private HashMap<String, LocationCard> locations;
+	private String dialog;
 
 	public static void main(String[] args) {
 		Game game = new Game();
-		GUI gui = new GUI(game);
+		gui = new GUI(game);
 		game.setup();
 		game.run();
 	}
@@ -57,15 +62,14 @@ public class Game extends Subject{
 		while (!gameWon) {
 			if (!currentPlayer.isComp()) {
 				// roll dice
-				int[] rolls = rollDice();
-				printf("%s rolled a %d and %d, for a total of %d.\n", currentPlayer.getName(), rolls[0],
-						rolls[1], rolls[2]);
-				// move
-				for (int i = rolls[2]; i > 0; i--) {
-					if (!getMoveInput(currentPlayer)) { // asking for move input and checking if valid
-						i++; // if invalid, increment i to ask again
+				int rolls[] = rollDice();
+				currRoll = rolls[2];
+				while(currRoll > 0){
+					if(System.currentTimeMillis() % 100 == 0){
+						notifyAllObservers();
 					}
 				}
+
 				Square currentPlayerLocation = board.getSquare(currentPlayer.getLocX(), currentPlayer.getLocY());
 				// in order to guess or solve, players must be in a room and not have previously
 				// failed a solve attempt
@@ -102,17 +106,18 @@ public class Game extends Subject{
 	 * @return The number of players, or 0 if there is an error.
 	 */
 	private int getNumPlayers() {
-		println("How many people are playing? Please enter a number from 2 to 4.");
-		String input = scan.nextLine();
+		String input = gui.inputDialog("How many people are playing? Please enter a number from 2 to 4.");
 		int numPlayers = 0;
 		try {
 			numPlayers = Integer.parseInt(input);
 		} catch (NumberFormatException e) {// input is not an int
-			println("Error - please enter a numeral (no decimals).");
+			//println("Error - please enter a numeral (no decimals).");
+			gui.messageDialog("Error - please enter a numeral (no decimals).");
 			return 0;
 		}
 		if (numPlayers < 2 || numPlayers > 4) {
-			println("Error - number of players must be between 2 and 4 (inclusive).");
+			//println("Error - number of players must be between 2 and 4 (inclusive).");
+			gui.messageDialog("Error - number of players must be between 2 and 4 (inclusive).");
 			return 0;
 		}
 		return numPlayers;
@@ -132,16 +137,26 @@ public class Game extends Subject{
 		Player.Character[] characters = Player.Character.values();
 		for (int i = 0; i < 4; i++) {
 			if (i < numPlayers) { // Player is human
-				printf("Player %d, please enter your name:\n", i+1);
-				String name = scan.nextLine();
-				printf("Thank you, %s. As Player %d, you will control %s.\n", name, i+1, characters[i].name());
-				players.add(new Player(name, characters[i], false));
-				println("Please pass control to the next player.");
+				String name = gui.inputDialog("Player %d, please enter your name:\n", i + 1);
+				Player.Character thisChar = gui.radioButton("Choose a character:");
+				gui.messageDialog("Thank you, %s. You will control %s.\n", name, thisChar.name());
+				players.add(new Player(name, thisChar, false));
+				thisChar.setSelected(true);
+				gui.messageDialog("Please pass control to the next player.");
 			} else { // Player is computer
-				printf("Player %d, controlling %s, will be played by the computer.\n", i+1,
-						characters[i].name());
-				String name = "COMP" + i;
-				players.add(new Player(name, characters[i], true));
+				boolean compHasChar = false;
+				for(Player.Character c : Player.Character.values()){
+					// assign computer to a character that hasn't been selected yet
+					if(!c.getSelected()) {
+						gui.messageDialog("Player %d, controlling %s, will be played by the computer.\n", i + 1, c.name());
+						String name = "COMP" + i;
+						players.add(new Player(name, c, true));
+						c.setSelected(true);
+						compHasChar = true;
+						break;
+					}
+				}
+				if(!compHasChar) throw new IllegalArgumentException("Computer has no character to play!");
 			}
 		}
 		return players;
@@ -266,37 +281,44 @@ public class Game extends Subject{
 		return results;
 	}
 
-	/**
-	 * Gets move input from System.in - if input is valid and move is allowed, move
-	 * is applied and method returns true - if input is invalid, or move is not
-	 * allowed, method returns false
-	 * 
-	 * @param player
-	 * @return
-	 */
-	private boolean getMoveInput(Player player) {
-		boolean validMove = false;
-		print("Enter a direction to move: ");
-		String next = scan.nextLine();
-		next = next.toLowerCase();
-		if (Board.Direction.UP.getFromString(next)) {
-			if (board.move(player, Board.Direction.UP))
-				return true;
-		} else if (Board.Direction.RIGHT.getFromString(next)) {
-			if (board.move(player, Board.Direction.RIGHT))
-				return true;
-		} else if (Board.Direction.DOWN.getFromString(next)) {
-			if (board.move(player, Board.Direction.DOWN))
-				return true;
-		} else if (Board.Direction.LEFT.getFromString(next)) {
-			if (board.move(player, Board.Direction.LEFT))
-				return true;
-		} else {
-			println("Invalid move!");
-			return false;
+	// /**
+	//  * Gets move input from System.in - if input is valid and move is allowed, move
+	//  * is applied and method returns true - if input is invalid, or move is not
+	//  * allowed, method returns false
+	//  * 
+	//  * @param player
+	//  * @return
+	//  */
+	// private boolean getMoveInput(Player player) {
+	// 	print("Enter a direction to move: ");
+	// 	String next = scan.nextLine();
+	// 	next = next.toLowerCase();
+	// 	if (Board.Direction.UP.getFromString(next)) {
+	// 		if (board.move(player, Board.Direction.UP))
+	// 			return true;
+	// 	} else if (Board.Direction.RIGHT.getFromString(next)) {
+	// 		if (board.move(player, Board.Direction.RIGHT))
+	// 			return true;
+	// 	} else if (Board.Direction.DOWN.getFromString(next)) {
+	// 		if (board.move(player, Board.Direction.DOWN))
+	// 			return true;
+	// 	} else if (Board.Direction.LEFT.getFromString(next)) {
+	// 		if (board.move(player, Board.Direction.LEFT))
+	// 			return true;
+	// 	} else {
+	// 		println("Invalid move!");
+	// 		return false;
+	// 	}
+	// 	println(player.getName() + " cannot move " + next);
+	// 	return false;
+	// }
+
+	public void moveCharacter(Direction dir){
+		if (!board.move(currentPlayer, dir) || currRoll <= 0){
+			println(currentPlayer.getName() + " cannot move " + dir.name());
 		}
-		println(player.getName() + " cannot move " + next);
-		return false;
+		currRoll--;
+		notifyAllObservers();
 	}
 
 	/**
@@ -481,7 +503,8 @@ public class Game extends Subject{
 		return getPlayerFromCharacter(characters[pos]);
 	}
 
-	public static ArrayList<Player> getPlayers() {
+	@Override
+	public ArrayList<Player> getAllPlayers() {
 		return players;
 	}
 
@@ -510,19 +533,19 @@ public class Game extends Subject{
 	}
 
 	void println(Object o) {
-		println(o);
+		System.out.println(o);
 		currText = o.toString();
 		notifyAllObservers();
 	}
 
 	void print(Object o) {
-		print(o);
+		System.out.print(o);
 		currText = o.toString();
 		notifyAllObservers();
 	}
 
 	void printf(String s, Object... args) {
-		printf(s, args);
+		System.out.printf(s, args);
 		currText = s.toString();
 		notifyAllObservers();
 	}

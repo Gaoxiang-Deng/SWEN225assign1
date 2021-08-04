@@ -18,7 +18,6 @@ public class RightCanvas extends Observer {
         this.setBackground(Color.blue);
         g.setColor(Color.white);
         g.drawString(data.toString(), 20, 20);
-        System.out.println("redrawing canvas");
     }
 
     @Override
