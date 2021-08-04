@@ -5,19 +5,25 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import GUI.GUI;
+import GUI.Subject;
 import board.*;
 import cards.*;
 
-public class Game {
+public class Game extends Subject{
 
 	private boolean gameWon = false;
 	private static ArrayList<Player> players;
 	private static Player currentPlayer;
 	private Board board;
 	public static Scanner scan = new Scanner(System.in);
+	public String currText;
 
 	private HashMap<String, WeaponCard> weapons;
 	private HashMap<String, CharacterCard> characters;
@@ -25,6 +31,7 @@ public class Game {
 
 	public static void main(String[] args) {
 		Game game = new Game();
+		GUI gui = new GUI(game);
 		game.setup();
 		game.run();
 	}
@@ -51,7 +58,7 @@ public class Game {
 			if (!currentPlayer.isComp()) {
 				// roll dice
 				int[] rolls = rollDice();
-				System.out.printf("%s rolled a %d and %d, for a total of %d.\n", currentPlayer.getName(), rolls[0],
+				printf("%s rolled a %d and %d, for a total of %d.\n", currentPlayer.getName(), rolls[0],
 						rolls[1], rolls[2]);
 				// move
 				for (int i = rolls[2]; i > 0; i--) {
@@ -95,17 +102,17 @@ public class Game {
 	 * @return The number of players, or 0 if there is an error.
 	 */
 	private int getNumPlayers() {
-		System.out.println("How many people are playing? Please enter a number from 2 to 4.");
+		println("How many people are playing? Please enter a number from 2 to 4.");
 		String input = scan.nextLine();
 		int numPlayers = 0;
 		try {
 			numPlayers = Integer.parseInt(input);
 		} catch (NumberFormatException e) {// input is not an int
-			System.out.println("Error - please enter a numeral (no decimals).");
+			println("Error - please enter a numeral (no decimals).");
 			return 0;
 		}
 		if (numPlayers < 2 || numPlayers > 4) {
-			System.out.println("Error - number of players must be between 2 and 4 (inclusive).");
+			println("Error - number of players must be between 2 and 4 (inclusive).");
 			return 0;
 		}
 		return numPlayers;
@@ -125,13 +132,13 @@ public class Game {
 		Player.Character[] characters = Player.Character.values();
 		for (int i = 0; i < 4; i++) {
 			if (i < numPlayers) { // Player is human
-				System.out.printf("Player %d, please enter your name:\n", i+1);
+				printf("Player %d, please enter your name:\n", i+1);
 				String name = scan.nextLine();
-				System.out.printf("Thank you, %s. As Player %d, you will control %s.\n", name, i+1, characters[i].name());
+				printf("Thank you, %s. As Player %d, you will control %s.\n", name, i+1, characters[i].name());
 				players.add(new Player(name, characters[i], false));
-				System.out.println("Please pass control to the next player.");
+				println("Please pass control to the next player.");
 			} else { // Player is computer
-				System.out.printf("Player %d, controlling %s, will be played by the computer.\n", i+1,
+				printf("Player %d, controlling %s, will be played by the computer.\n", i+1,
 						characters[i].name());
 				String name = "COMP" + i;
 				players.add(new Player(name, characters[i], true));
@@ -269,7 +276,7 @@ public class Game {
 	 */
 	private boolean getMoveInput(Player player) {
 		boolean validMove = false;
-		System.out.print("Enter a direction to move: ");
+		print("Enter a direction to move: ");
 		String next = scan.nextLine();
 		next = next.toLowerCase();
 		if (Board.Direction.UP.getFromString(next)) {
@@ -285,10 +292,10 @@ public class Game {
 			if (board.move(player, Board.Direction.LEFT))
 				return true;
 		} else {
-			System.out.println("Invalid move!");
+			println("Invalid move!");
 			return false;
 		}
-		System.out.println(player.getName() + " cannot move " + next);
+		println(player.getName() + " cannot move " + next);
 		return false;
 	}
 
@@ -301,13 +308,13 @@ public class Game {
 	 * @return True if the guess was a successful solve attempt; otherwise false.
 	 */
 	private Guess makeGuess(Player p) {
-		System.out.println(p.getName() + ", make your guess!");
+		println(p.getName() + ", make your guess!");
 
 		//Character
-		System.out.println("Please choose a character:");
+		println("Please choose a character:");
 		ArrayList<String> charNames = new ArrayList<String>();
 		for(Player.Character c : Player.Character.values()){
-			System.out.print(c.name() + " ");
+			print(c.name() + " ");
 			charNames.add(c.name());
 		}
 		boolean validName = false;
@@ -321,10 +328,10 @@ public class Game {
 		CharacterCard cc = characters.get(next.toUpperCase());
 
 		//Weapon
-		System.out.println("Please choose a weapon:");
+		println("Please choose a weapon:");
 		ArrayList<String> weaponNames = new ArrayList<String>();
 		for(WeaponCard.Weapons w : WeaponCard.Weapons.values()){
-			System.out.print(w.name() + " ");
+			print(w.name() + " ");
 			weaponNames.add(w.name());
 		}
 		validName = false;
@@ -349,14 +356,14 @@ public class Game {
 		for(Player p : inTurnOrder) {
 			int numHeld = g.getNumHeld(p);
 			handOverTablet(currentPlayer, p);
-			System.out.printf("%s has guessed %s.", currentPlayer.getName(), g.toString());
+			printf("%s has guessed %s.", currentPlayer.getName(), g.toString());
 			if(cardPassed) {
-				System.out.printf("%s has already shown a card to %s. You do not need to do anything.", passer.getName(), currentPlayer.getName());
+				printf("%s has already shown a card to %s. You do not need to do anything.", passer.getName(), currentPlayer.getName());
 			}else if(numHeld == 0) {
-				System.out.println("You do not hold any of these cards.");
+				println("You do not hold any of these cards.");
 			}else {
 				Card card = p.chooseCardToShow(g);
-				System.out.printf("%s reveals %s.", p.getName(), card.getValue());
+				printf("%s reveals %s.", p.getName(), card.getValue());
 				passer = p;
 				cardPassed = true;
 			}
@@ -370,7 +377,7 @@ public class Game {
 	 * Clears all text from the console, to prevent players from seeing information they shouldn't.
 	 */
 	public void flushConsole() {
-		System.out.print("\033[H\033[2J");
+		print("\033[H\033[2J");
 		System.out.flush();
 	}
 	
@@ -404,14 +411,14 @@ public class Game {
 	 * @return 1 if yes, 0 if no, -1 if error
 	 */
 	private int askForSolve(Player p) {
-		System.out.printf("%s, would you like to make a solve attempt? Y/N", p.getName());
+		printf("%s, would you like to make a solve attempt? Y/N", p.getName());
 		String next = scan.nextLine();
 		if (next.equalsIgnoreCase("Y") || next.equalsIgnoreCase("yes")) {
 			return 1;
 		} else if (next.equalsIgnoreCase("N") || next.equalsIgnoreCase("no")) {
 			return 0;
 		}
-		System.out.println("Invalid entry - please try again.");
+		println("Invalid entry - please try again.");
 		return -1; // invalid input or parse error
 	}
 
@@ -422,9 +429,9 @@ public class Game {
 	 * @param p1 The player passing the tablet
 	 * @param p2 The player to who the tablet is being passed
 	 */
-	public static void handOverTablet(Player p1, Player p2) {
-		System.out.printf("%s, please pass the tablet to %s.\n", p1.getName(), p2.getName());
-		System.out.printf("%s, please confim you have the tablet.\n", p2.getName());
+	public void handOverTablet(Player p1, Player p2) {
+		printf("%s, please pass the tablet to %s.\n", p1.getName(), p2.getName());
+		printf("%s, please confim you have the tablet.\n", p2.getName());
 		scan.nextLine(); // user must enter something to confirm - but can enter anything
 	}
 
@@ -436,8 +443,8 @@ public class Game {
 	 * @param g The winning guess
 	 */
 	private void win(Player p, Guess g) {
-		System.out.printf("%s is the winner!\n", p.getName());
-		System.out.printf("The correct solution was: %s in the %s with the %s.\n", g.getCharacter().getValue(),
+		printf("%s is the winner!\n", p.getName());
+		printf("The correct solution was: %s in the %s with the %s.\n", g.getCharacter().getValue(),
 				g.getLocation().getValue(), g.getWeapon().getValue());
 		gameWon = true;
 		scan.close();
@@ -476,6 +483,48 @@ public class Game {
 
 	public static ArrayList<Player> getPlayers() {
 		return players;
+	}
+
+	@Override
+	public Board getBoard() {
+		return board;
+	}
+
+	@Override
+	public Player getPlayer() {
+		return currentPlayer;
+	}
+
+	@Override
+	public List<Card> getDeck() {
+		List<Card> allCards = Stream.concat(weapons.values().stream(), characters.values().stream()).map(c -> (Card) c)
+				.collect(Collectors.toList());
+
+		return Stream.concat(allCards.stream(), locations.values().stream()).map(c -> (Card) c)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public String getInfo() {
+		return currText;
+	}
+
+	void println(Object o) {
+		println(o);
+		currText = o.toString();
+		notifyAllObservers();
+	}
+
+	void print(Object o) {
+		print(o);
+		currText = o.toString();
+		notifyAllObservers();
+	}
+
+	void printf(String s, Object... args) {
+		printf(s, args);
+		currText = s.toString();
+		notifyAllObservers();
 	}
 
 }
