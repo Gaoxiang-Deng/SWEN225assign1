@@ -23,16 +23,20 @@ public class Game extends Subject{
 	private boolean gameWon = false;
 	private static ArrayList<Player> players;
 	private static Player currentPlayer;
+	private static Player movingPlayer;
 	private static int currRoll;
 	private Board board;
 	public static Scanner scan = new Scanner(System.in);
-	public String currText;
+	public String currText = "";
 	static GUI gui;
 
-	private HashMap<String, WeaponCard> weapons;
-	private HashMap<String, CharacterCard> characters;
-	private HashMap<String, LocationCard> locations;
-	private String dialog;
+	private HashMap<String, WeaponCard> weapons = new HashMap<>();
+	private HashMap<String, CharacterCard> characters = new HashMap<>();
+	private HashMap<String, LocationCard> locations = new HashMap<>();
+	private WeaponCard selectedWeapon;
+	private CharacterCard selectedCharacter;
+	private boolean cardSelectAllowed = false;
+	private boolean manualGuess = false;
 
 	public static void main(String[] args) {
 		Game game = new Game();
@@ -64,17 +68,27 @@ public class Game extends Subject{
 				// roll dice
 				int rolls[] = rollDice();
 				currRoll = rolls[2];
-				while(currRoll > 0){
+				printf("Player %s, you have rolled a " + currRoll, currentPlayer.getName());
+				movingPlayer = currentPlayer;
+				while(currRoll > 0 && !manualGuess){
 					if(System.currentTimeMillis() % 100 == 0){
 						notifyAllObservers();
+						print("Number of moves left: " + currRoll);
 					}
 				}
+				movingPlayer = null;
+				cardSelectAllowed = true;
+				while(selectedCharacter == null || selectedWeapon == null){
+					print("Please select a character and a weapon for your guess!\n" + selectedCharacter + "\n" + selectedWeapon);
+				}
+				print("Your guess: " + selectedCharacter.getValue() + " in the //GET ROOM//" + " with the " + selectedWeapon.getValue());
 
 				Square currentPlayerLocation = board.getSquare(currentPlayer.getLocX(), currentPlayer.getLocY());
 				// in order to guess or solve, players must be in a room and not have previously
 				// failed a solve attempt
 				// computer players don't guess or solve
 				if (currentPlayerLocation.getIsRoom() && !currentPlayer.getFailedSolve()) {
+
 					makeGuess(currentPlayer);
 					boolean cont = true;
 					while (cont) {
@@ -99,6 +113,8 @@ public class Game extends Subject{
 			currentPlayer = getNextPlayer();
 		}
 	}
+
+
 
 	/**
 	 * Asks the user for the number of people playing the game.
@@ -170,9 +186,9 @@ public class Game extends Subject{
 
 	private HashMap<String, CharacterCard> makeCharacterCards() {
 		HashMap<String, CharacterCard> characterCards = new HashMap<String, CharacterCard>();
-		Player.Character[] characters = Player.Character.values();
-		for (int i = 0; i < characters.length; i++) {
-			CharacterCard c = new CharacterCard(characters[i].name());
+		Player.Character[] characterNames = Player.Character.values();
+		for (int i = 0; i < characterNames.length; i++) {
+			CharacterCard c = new CharacterCard(characterNames[i].name());
 			characterCards.put(c.getValue(), c);
 		}
 		return characterCards;
@@ -190,9 +206,9 @@ public class Game extends Subject{
 
 	private HashMap<String, WeaponCard> makeWeaponCards() {
 		HashMap<String, WeaponCard> weaponCards = new HashMap<String, WeaponCard>();
-		WeaponCard.Weapons[] weapons = WeaponCard.Weapons.values();
-		for (int i = 0; i < weapons.length; i++) {
-			WeaponCard w = new WeaponCard(weapons[i].name());
+		WeaponCard.Weapons[] weaponNames = WeaponCard.Weapons.values();
+		for (int i = 0; i < weaponNames.length; i++) {
+			WeaponCard w = new WeaponCard(weaponNames[i].name());
 			weaponCards.put(w.getValue(), w);
 		}
 		return weaponCards;
@@ -314,8 +330,9 @@ public class Game extends Subject{
 	// }
 
 	public void moveCharacter(Direction dir){
-		if (!board.move(currentPlayer, dir) || currRoll <= 0){
-			println(currentPlayer.getName() + " cannot move " + dir.name());
+		if(movingPlayer == null) return;
+		if (!board.move(movingPlayer, dir) || currRoll <= 0){
+			println(movingPlayer.getName() + " cannot move " + dir.name());
 		}
 		currRoll--;
 		notifyAllObservers();
@@ -519,12 +536,31 @@ public class Game extends Subject{
 	}
 
 	@Override
-	public List<Card> getDeck() {
-		List<Card> allCards = Stream.concat(weapons.values().stream(), characters.values().stream()).map(c -> (Card) c)
-				.collect(Collectors.toList());
+	public List<List<? extends Card>> getDeck() {
+		List<List<? extends Card>> allCards = new ArrayList<>();
+		List<WeaponCard> w = List.copyOf(weapons.values());
+		List<CharacterCard> c = List.copyOf(characters.values());
+		List<LocationCard> l = List.copyOf(locations.values());
+		allCards.add(w);
+		allCards.add(c);
+		allCards.add(l);
+		return allCards;
+	}
 
-		return Stream.concat(allCards.stream(), locations.values().stream()).map(c -> (Card) c)
-				.collect(Collectors.toList());
+	public void addToGuess(WeaponCard w) {
+		if(cardSelectAllowed) selectedWeapon = w;
+	}
+
+	public void addToGuess(CharacterCard c) {
+		if(cardSelectAllowed) selectedCharacter = c;
+	}
+
+	public void guess() {
+		cardSelectAllowed = true;
+		manualGuess = true;
+	}
+
+	public void solve() {
 	}
 
 	@Override
@@ -533,21 +569,21 @@ public class Game extends Subject{
 	}
 
 	void println(Object o) {
-		System.out.println(o);
+		//System.out.println(o);
 		currText = o.toString();
 		notifyAllObservers();
 	}
 
 	void print(Object o) {
-		System.out.print(o);
-		currText = o.toString();
+		//System.out.print(o);
+		String s = "It is " + currentPlayer.getName() + "'s (" + currentPlayer.getCharacter().name() + "'s) turn\n";
+		currText = s + o.toString();
 		notifyAllObservers();
 	}
 
 	void printf(String s, Object... args) {
-		System.out.printf(s, args);
+		//System.out.printf(s, args);
 		currText = s.toString();
 		notifyAllObservers();
 	}
-
 }

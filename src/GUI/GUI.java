@@ -98,7 +98,7 @@ public class GUI {
         c.weighty = 1.0;
         c.gridx = 1;
         c.gridy = 0;
-        c.gridheight = 2;
+        c.gridheight = 2; 
         pane.add(board, c);
 
         c = new GridBagConstraints();
@@ -112,15 +112,14 @@ public class GUI {
         pane.add(rightPane, c);
 
         c = new GridBagConstraints();
-        JPanel infoPane = new JPanel();
-        infoPane.add(new JButton("Various info and buttons here!"));
+        LeftCanvas leftCanvas = new LeftCanvas(subject);
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 0;
         c.weighty = 0;
         c.gridx = 0;
         c.gridy = 1;
         c.gridheight = 2;
-        pane.add(infoPane, c);
+        pane.add(leftCanvas, c);
 
         c = new GridBagConstraints();
         CardsCanvas cardsPane = new CardsCanvas(subject);

@@ -9,6 +9,9 @@ import java.util.List;
 import board.Board;
 import board.Board.Direction;
 import cards.Card;
+import cards.CharacterCard;
+import cards.WeaponCard;
+import cards.WeaponCard.Weapons;
 import game.Player;
 
 public class Subject {
@@ -40,7 +43,7 @@ public class Subject {
      * 
      * @return A list of all cards in the game
      */
-    public List<Card> getDeck(){
+    public List<List<? extends Card>> getDeck(){
         return null;
     }
 
@@ -51,6 +54,9 @@ public class Subject {
     public String getInfo(){
         return null;
     }
+
+    public void addToGuess(WeaponCard w) { }
+    public void addToGuess(CharacterCard c) { }
 
     public void setState(int state) {
         this.state = state;
@@ -68,5 +74,11 @@ public class Subject {
     }
 
     public void moveCharacter(Direction dir) {
+    }
+
+	public void guess() {
+	}
+
+    public void solve() {
     }
 }
