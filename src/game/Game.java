@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import GUI.GUI;
 import GUI.Subject;
@@ -68,19 +66,25 @@ public class Game extends Subject{
 				// roll dice
 				int rolls[] = rollDice();
 				currRoll = rolls[2];
-				printf("Player %s, you have rolled a " + currRoll, currentPlayer.getName());
 				movingPlayer = currentPlayer;
 				while(currRoll > 0 && !manualGuess){
 					if(System.currentTimeMillis() % 100 == 0){
 						notifyAllObservers();
-						print("Number of moves left: " + currRoll);
+						print("You rolled a " + rolls[2] + "\nNumber of moves left: " + currRoll);
 					}
 				}
 				movingPlayer = null;
 				cardSelectAllowed = true;
-				while(selectedCharacter == null || selectedWeapon == null){
-					print("Please select a character and a weapon for your guess!\n" + selectedCharacter + "\n" + selectedWeapon);
+				if (currentPlayerLocation.getIsRoom() && !currentPlayer.getFailedSolve()) {
+					while(selectedCharacter == null || selectedWeapon == null){
+						String s = "";
+						s+= "Please select a character and a weapon for your guess!\n";
+						if( selectedCharacter != null) s+= selectedCharacter.getValue();
+						if(selectedWeapon != null) s+= selectedWeapon.getValue();
+						print(s);
+					}
 				}
+
 				print("Your guess: " + selectedCharacter.getValue() + " in the //GET ROOM//" + " with the " + selectedWeapon.getValue());
 
 				Square currentPlayerLocation = board.getSquare(currentPlayer.getLocX(), currentPlayer.getLocY());
@@ -88,7 +92,6 @@ public class Game extends Subject{
 				// failed a solve attempt
 				// computer players don't guess or solve
 				if (currentPlayerLocation.getIsRoom() && !currentPlayer.getFailedSolve()) {
-
 					makeGuess(currentPlayer);
 					boolean cont = true;
 					while (cont) {

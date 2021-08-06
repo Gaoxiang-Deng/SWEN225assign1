@@ -16,7 +16,7 @@ public class RightCanvas extends Observer implements MouseListener{
     CharacterCard character;
     List<List<? extends Card>> deck;
     int cardSpacing = 23;
-    int typeSpacing = 150;
+    int typeSpacing = cardSpacing*5;
 
     public RightCanvas(Subject subject){
         super();
@@ -33,11 +33,12 @@ public class RightCanvas extends Observer implements MouseListener{
 
         String[] names = {"Weapons", "Characters", "Locations"};
         for(int j = 0; j < names.length; j++){
-            g.setFont(new Font("TimesRoman", Font.BOLD, 20));
-            g.drawString(names[j]+":", 20, j * typeSpacing + 20);
+            // g.setFont(new Font("TimesRoman", Font.BOLD, 20));
+            // g.drawString(names[j]+":", 20, j * typeSpacing + 20);
             for(int i = 0; i < deck.get(j).size(); i++){
                 g.setFont(new Font("TimesRoman", Font.PLAIN, 20));
-                g.drawString(deck.get(j).get(i).getValue(), 20, j * typeSpacing + i * cardSpacing + 50);
+                g.drawString(deck.get(j).get(i).getValue(), 20, i * cardSpacing + j * typeSpacing + 20);
+                
             }
         }
     }
@@ -50,13 +51,21 @@ public class RightCanvas extends Observer implements MouseListener{
     @Override
     public void mousePressed(MouseEvent e) {
         List<List<? extends Card>> deck = subject.getDeck();
-        int list = (e.getY()-40) / typeSpacing;
+        
+        int index = e.getY() / cardSpacing;
+        int list;
         int card;
-        if(list != 0) {
-             card = list / (cardSpacing / deck.get(list).size());
+
+        if(index < deck.get(0).size()) {
+            list = 0;
+            card = index - list;
         }
-        else card = cardSpacing / deck.get(list).size();
-        System.out.println("List: " + list + "\nCard: " + card);
+        else if(index < deck.get(0).size() + deck.get(1).size()) {
+            list = 1;
+            card = index - deck.get(0).size();
+        }
+        else return;
+        
         if(list == 0) {
             weapon = (WeaponCard) deck.get(list).get(card);
             subject.addToGuess(weapon);
