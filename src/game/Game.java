@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
+import javax.sound.midi.Receiver;
+
 import GUI.GUI;
 import GUI.Subject;
 import board.*;
@@ -35,6 +37,7 @@ public class Game extends Subject{
 	private CharacterCard selectedCharacter;
 	private boolean cardSelectAllowed = false;
 	private boolean manualGuess = false;
+	private Card revealedCard;
 
 	public static void main(String[] args) {
 		Game game = new Game();
@@ -67,6 +70,9 @@ public class Game extends Subject{
 				int rolls[] = rollDice();
 				currRoll = rolls[2];
 				movingPlayer = currentPlayer;
+
+				// MOVING ====================================================================
+				// player may input moves until they have no more moves, or decide to guess manually
 				while(currRoll > 0 && !manualGuess){
 					if(System.currentTimeMillis() % 100 == 0){
 						notifyAllObservers();
@@ -74,7 +80,12 @@ public class Game extends Subject{
 					}
 				}
 				movingPlayer = null;
+				manualGuess = false;
+
+				// GUESSING ====================================================================
+				// player may select two cards (displayed on screen)
 				cardSelectAllowed = true;
+				Square currentPlayerLocation = board.getSquare(currentPlayer.getLocX(), currentPlayer.getLocY());
 				if (currentPlayerLocation.getIsRoom() && !currentPlayer.getFailedSolve()) {
 					while(selectedCharacter == null || selectedWeapon == null){
 						String s = "";
@@ -83,34 +94,20 @@ public class Game extends Subject{
 						if(selectedWeapon != null) s+= selectedWeapon.getValue();
 						print(s);
 					}
-				}
+					cardSelectAllowed = false;
+					Guess currGuess = new Guess(selectedCharacter, locations.get(currentPlayerLocation.getRoom().name()), selectedWeapon);
+					String guessInfo = "Your guess: " + selectedCharacter.getValue() + 
+										" in the " + currentPlayerLocation.getRoom().name() +
+										" with the " + selectedWeapon.getValue();
 
-				print("Your guess: " + selectedCharacter.getValue() + " in the //GET ROOM//" + " with the " + selectedWeapon.getValue());
-
-				Square currentPlayerLocation = board.getSquare(currentPlayer.getLocX(), currentPlayer.getLocY());
-				// in order to guess or solve, players must be in a room and not have previously
-				// failed a solve attempt
-				// computer players don't guess or solve
-				if (currentPlayerLocation.getIsRoom() && !currentPlayer.getFailedSolve()) {
-					makeGuess(currentPlayer);
-					boolean cont = true;
-					while (cont) {
-						int result = askForSolve(currentPlayer);
-						if (result == 0) {
-							cont = false;
-							break;
-						} else if (result == 1) {
-							Guess solve = makeGuess(currentPlayer);
-							if (solve.processSolve()) {
-								win(currentPlayer, solve);
-							} else {
-								currentPlayer.setFailedSolve();
-							}
-							cont = false;
-						}
-					}
+					print(guessInfo);
+					processGuess(currGuess);
 				}
 			}
+
+			// NEXT TURN ====================================================================
+			selectedWeapon = null;
+			selectedCharacter = null;
 			// end turn - pass to next player
 			handOverTablet(currentPlayer, getNextPlayer());
 			currentPlayer = getNextPlayer();
@@ -153,7 +150,6 @@ public class Game extends Subject{
 	 */
 	private ArrayList<Player> createPlayers(int numPlayers) {
 		ArrayList<Player> players = new ArrayList<Player>();
-		Player.Character[] characters = Player.Character.values();
 		for (int i = 0; i < 4; i++) {
 			if (i < numPlayers) { // Player is human
 				String name = gui.inputDialog("Player %d, please enter your name:\n", i + 1);
@@ -300,38 +296,6 @@ public class Game extends Subject{
 		return results;
 	}
 
-	// /**
-	//  * Gets move input from System.in - if input is valid and move is allowed, move
-	//  * is applied and method returns true - if input is invalid, or move is not
-	//  * allowed, method returns false
-	//  * 
-	//  * @param player
-	//  * @return
-	//  */
-	// private boolean getMoveInput(Player player) {
-	// 	print("Enter a direction to move: ");
-	// 	String next = scan.nextLine();
-	// 	next = next.toLowerCase();
-	// 	if (Board.Direction.UP.getFromString(next)) {
-	// 		if (board.move(player, Board.Direction.UP))
-	// 			return true;
-	// 	} else if (Board.Direction.RIGHT.getFromString(next)) {
-	// 		if (board.move(player, Board.Direction.RIGHT))
-	// 			return true;
-	// 	} else if (Board.Direction.DOWN.getFromString(next)) {
-	// 		if (board.move(player, Board.Direction.DOWN))
-	// 			return true;
-	// 	} else if (Board.Direction.LEFT.getFromString(next)) {
-	// 		if (board.move(player, Board.Direction.LEFT))
-	// 			return true;
-	// 	} else {
-	// 		println("Invalid move!");
-	// 		return false;
-	// 	}
-	// 	println(player.getName() + " cannot move " + next);
-	// 	return false;
-	// }
-
 	public void moveCharacter(Direction dir){
 		if(movingPlayer == null) return;
 		if (!board.move(movingPlayer, dir) || currRoll <= 0){
@@ -341,78 +305,40 @@ public class Game extends Subject{
 		notifyAllObservers();
 	}
 
-	/**
-	 * Called when a player makes a guess. Asks the current player what cards they
-	 * would like to guess, then creates a new Guess object with those cards. The
-	 * guess object will handle the logic of processing the guess.
-	 * 
-	 * @param p The player making the guess
-	 * @return True if the guess was a successful solve attempt; otherwise false.
-	 */
-	private Guess makeGuess(Player p) {
-		println(p.getName() + ", make your guess!");
-
-		//Character
-		println("Please choose a character:");
-		ArrayList<String> charNames = new ArrayList<String>();
-		for(Player.Character c : Player.Character.values()){
-			print(c.name() + " ");
-			charNames.add(c.name());
-		}
-		boolean validName = false;
-		String next = scan.nextLine();
-		while(!validName){
-			if(charNames.contains(next.toUpperCase())){
-				validName = true;
-			}
-			next = scan.nextLine();
-		}
-		CharacterCard cc = characters.get(next.toUpperCase());
-
-		//Weapon
-		println("Please choose a weapon:");
-		ArrayList<String> weaponNames = new ArrayList<String>();
-		for(WeaponCard.Weapons w : WeaponCard.Weapons.values()){
-			print(w.name() + " ");
-			weaponNames.add(w.name());
-		}
-		validName = false;
-		while(!validName){
-			next = scan.nextLine();
-			if(weaponNames.contains(next.toUpperCase())){
-				validName = true;
-			}
-		}
-		WeaponCard wc = weapons.get(next.toUpperCase());
-
-		//Location (room that player is in!)
-		LocationCard lc = locations.get(board.getSquare(p.locX, p.locY).getRoom().name());
-
-		return new Guess(cc, lc, wc);
-	}
-	
 	private void processGuess(Guess g) {
 		ArrayList<Player> inTurnOrder = getPlayersInTurnOrder();
-		boolean cardPassed = false; //has a card been shown to the current Player?
-		Player passer = null; //who showed a card to the current Player
+		String info = "";
+
 		for(Player p : inTurnOrder) {
+			if(p == currentPlayer) continue;
+			handOverTablet(currentPlayer, p, info);
 			int numHeld = g.getNumHeld(p);
-			handOverTablet(currentPlayer, p);
-			printf("%s has guessed %s.", currentPlayer.getName(), g.toString());
-			if(cardPassed) {
-				printf("%s has already shown a card to %s. You do not need to do anything.", passer.getName(), currentPlayer.getName());
-			}else if(numHeld == 0) {
-				println("You do not hold any of these cards.");
-			}else {
-				Card card = p.chooseCardToShow(g);
-				printf("%s reveals %s.", p.getName(), card.getValue());
-				passer = p;
-				cardPassed = true;
+			info = String.format("%s has guessed %s.", currentPlayer.getName(), g.toString());
+			if(numHeld == 0) {
+				handOverTablet(p, currentPlayer, info + "\nYou do not hold any of these cards.");
+				info = String.format("%s does not reveal a card.", p.getName());
 			}
-			handOverTablet(p, currentPlayer);
-			flushConsole();
+			else{
+				Card card = chooseCardToShow(g);
+				handOverTablet(p, currentPlayer, String.format("You have decided to reveal %s.", card.getValue()));
+				info = String.format("%s reveals %s.", p.getName(), card.getValue());
+			}
 		}
 		
+	}
+
+	// wait for player to click on a card in the guess and return it
+	public Card chooseCardToShow(Guess guess){
+		String info = String.format("%s has guessed %s.", currentPlayer.getName(), guess.toString());
+		while (revealedCard == null) {
+			if (System.currentTimeMillis() % 100 == 0) {
+				print(info + "\n Select a card to reveal from your hand");
+				notifyAllObservers();
+			}
+		}
+		Card val = revealedCard;
+		revealedCard = null;
+		return val;
 	}
 	
 	/**
@@ -471,10 +397,24 @@ public class Game extends Subject{
 	 * @param p1 The player passing the tablet
 	 * @param p2 The player to who the tablet is being passed
 	 */
+	public void handOverTablet(Player p1, Player p2, String info) {
+		gui.messageDialog(info+ "\n%s, please pass the tablet to %s.\n", p1.getName(), p2.getName());
+		//printf("%s, please confim you have the tablet.\n", p2.getName());
+		//scan.nextLine(); // user must enter something to confirm - but can enter anything
+	}
+
+	/**
+	 * Called whenever the tablet needs to be passed from one player to another -
+	 * Generally when guessing or at end of turn.
+	 * 
+	 * @param p1 The player passing the tablet
+	 * @param p2 The player to who the tablet is being passed
+	 */
 	public void handOverTablet(Player p1, Player p2) {
-		printf("%s, please pass the tablet to %s.\n", p1.getName(), p2.getName());
-		printf("%s, please confim you have the tablet.\n", p2.getName());
-		scan.nextLine(); // user must enter something to confirm - but can enter anything
+		gui.messageDialog("%s, please pass the tablet to %s.\n", p1.getName(), p2.getName());
+		// printf("%s, please confim you have the tablet.\n", p2.getName());
+		// scan.nextLine(); // user must enter something to confirm - but can enter
+		// anything
 	}
 
 	/**
@@ -491,6 +431,7 @@ public class Game extends Subject{
 		gameWon = true;
 		scan.close();
 	}
+
 
 	/**
 	 * Given a Character, returns the Player controlling that Character
@@ -523,6 +464,14 @@ public class Game extends Subject{
 		return getPlayerFromCharacter(characters[pos]);
 	}
 
+	//====================================================
+	//=============== GUI METHODS ========================
+	//====================================================
+
+	public void setRevealedCard(Card c) {
+		revealedCard = c;
+	}
+	 
 	@Override
 	public ArrayList<Player> getAllPlayers() {
 		return players;

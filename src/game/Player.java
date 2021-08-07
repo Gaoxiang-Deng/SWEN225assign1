@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 import cards.Card;
 
@@ -105,8 +106,11 @@ public class Player {
 		return failedSolve;
 	}
 
-	public Collection<Card> getHand(){
-		return Collections.unmodifiableCollection(hand);
+	public List<Card> getHand(){
+		List<Card> cards = new ArrayList<>();
+		for(Card c : hand) { cards.add(c); }
+		//return Collections.unmodifiableList(cards);
+		return cards;
 	}
 	
 	/**
