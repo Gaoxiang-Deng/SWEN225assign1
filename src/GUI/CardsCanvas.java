@@ -1,6 +1,5 @@
 package GUI;
 
-import javax.swing.*;
 import javax.swing.event.MouseInputListener;
 
 import cards.Card;

@@ -1,6 +1,5 @@
 package game;
 
-import java.sql.Time;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
-
-import javax.sound.midi.Receiver;
 
 import GUI.GUI;
 import GUI.Subject;

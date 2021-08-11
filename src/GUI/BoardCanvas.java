@@ -1,10 +1,7 @@
 package GUI;
 
-import javax.swing.*;
-
 import board.Board;
 import game.Player;
-import board.Square;
 
 import java.awt.*;
 import java.util.ArrayList;
