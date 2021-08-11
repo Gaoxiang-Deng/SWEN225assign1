@@ -76,7 +76,7 @@ public class Guess {
 			result++;
 		}
 		if (weapon.getPlayer() != null && weapon.getPlayer().equals(p)) {
-			result++;
+      result++;
 		}
 		return result;
 	}
