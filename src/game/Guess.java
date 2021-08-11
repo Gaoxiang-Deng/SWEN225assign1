@@ -69,14 +69,14 @@ public class Guess {
 	 */
 	public int getNumHeld(Player p) {
 		int result = 0;
-		if (character.getPlayer().equals(p)) {
+		if (character.getPlayer() != null && character.getPlayer().equals(p)) {
 			result++;
 		}
-		if (location.getPlayer().equals(p)) {
+		if (location.getPlayer() != null && location.getPlayer().equals(p)) {
 			result++;
 		}
-		if (weapon.getPlayer().equals(p)) {
-			result++;
+		if (weapon.getPlayer() != null && weapon.getPlayer().equals(p)) {
+      result++;
 		}
 		return result;
 	}
