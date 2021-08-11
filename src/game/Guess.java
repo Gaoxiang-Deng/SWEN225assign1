@@ -6,11 +6,11 @@ import java.util.Scanner;
 import cards.*;
 
 public class Guess {
-	
+
 	private CharacterCard character;
 	private LocationCard location;
 	private WeaponCard weapon;
-	
+
 	/**
 	 * A guess object represents either an attempt to gain more information about the murder, or
 	 * an attempt to solve it.
@@ -24,21 +24,19 @@ public class Guess {
 		this.location = l;
 		this.weapon = w;
 	}
-	
+
 	public boolean processSolve() {
-		if(character.getPlayer() != null) {
+		if (character.getPlayer() != null) {
 			return false;
 		}
-		if(location.getPlayer() != null) {
+		if (location.getPlayer() != null) {
 			return false;
 		}
-		if(weapon.getPlayer() != null) {
+		if (weapon.getPlayer() != null) {
 			return false;
 		}
 		return true;
 	}
-	
-	
 
 	@SuppressWarnings("javadoc")
 	public CharacterCard getCharacter() {
@@ -54,7 +52,7 @@ public class Guess {
 	public WeaponCard getWeapon() {
 		return weapon;
 	}
-	
+
 	/**
 	 * Checks whether this guess contains a given card.
 	 * @param c The card being checked
@@ -63,7 +61,7 @@ public class Guess {
 	public boolean contains(Card c) {
 		return c.equals(character) || c.equals(location) || c.equals(weapon);
 	}
-	
+
 	/**
 	 * Finds the number of cards in the guess that are in the given player's hand.
 	 * @param p The player being checked
@@ -71,13 +69,13 @@ public class Guess {
 	 */
 	public int getNumHeld(Player p) {
 		int result = 0;
-		if(character.getPlayer().equals(p)) {
+		if (character.getPlayer().equals(p)) {
 			result++;
 		}
-		if(location.getPlayer().equals(p)) {
+		if (location.getPlayer().equals(p)) {
 			result++;
 		}
-		if(weapon.getPlayer().equals(p)) {
+		if (weapon.getPlayer().equals(p)) {
 			result++;
 		}
 		return result;
@@ -119,10 +117,10 @@ public class Guess {
 			return false;
 		return true;
 	}
-	
+
 	@Override
 	public String toString() {
 		return character.getValue() + " in the " + location.getValue() + " with the " + weapon.getValue();
 	}
-	
+
 }

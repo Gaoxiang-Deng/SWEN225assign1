@@ -5,22 +5,22 @@ import game.Player;
  * Represents a general card. Superclass for creating character, location and weapon cards. 
  * Best practice is to, where possible, use the subclasses instead of this.
  * Implements Cloneable as futureproofing - it may not be necessary to use these features in the final implementation.
- * 
+ *
  * @author Michael
  *
  */
 public class Card implements Cloneable {
-	
+
 	/**
 	 * The player who holds the card. If null then this card is part of the solution.
 	 */
 	protected Player player;
-	
+
 	/**
 	 * The card's value (its name).
 	 */
 	protected String value;
-	
+
 	/**
 	 * @param p The player who holds the card.
 	 * @param v The card's value (its name).
@@ -29,7 +29,7 @@ public class Card implements Cloneable {
 		this.player = p;
 		this.value = v;
 	}
-	
+
 	public Card(String v) {
 		this.value = v;
 	}
@@ -38,7 +38,7 @@ public class Card implements Cloneable {
 	public Player getPlayer() {
 		return player;
 	}
-	
+
 	@SuppressWarnings("javadoc")
 	public void setPlayer(Player p) {
 		this.player = p;
@@ -48,11 +48,11 @@ public class Card implements Cloneable {
 	public String getValue() {
 		return value;
 	}
-	
+
 	public Card clone() {
 		return new Card(this.player, this.value);
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
