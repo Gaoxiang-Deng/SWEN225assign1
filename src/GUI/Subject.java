@@ -17,6 +17,7 @@ import game.Player;
 public class Subject {
 
     private List<Observer> observers = new ArrayList<Observer>();
+    private int state;
 
     /**
      * 
@@ -54,17 +55,13 @@ public class Subject {
         return null;
     }
 
-    /**
-     * Adds a  weaponcard to the current guess
-     * @param w
-     */
     public void addToGuess(WeaponCard w) { }
-
-    /**
-     * Adds a character card to the current guess
-     * @param c
-     */
     public void addToGuess(CharacterCard c) { }
+
+    public void setState(int state) {
+        this.state = state;
+        notifyAllObservers();
+    }
 
     public void attach(Observer observer) {
         observers.add(observer);
@@ -83,8 +80,5 @@ public class Subject {
 	}
 
     public void solve() {
-    }
-
-    public void setRevealedCard(Card card) {
     }
 }
