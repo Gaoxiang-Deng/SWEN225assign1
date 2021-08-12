@@ -119,5 +119,4 @@ public class Guess {
 	public String toString() {
 		return character.getValue() + " in the " + location.getValue() + " with the " + weapon.getValue();
 	}
-
 }

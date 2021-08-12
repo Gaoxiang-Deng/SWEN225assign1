@@ -420,8 +420,7 @@ public class Game extends Subject {
 	 */
 	private void win(Player p, Guess g) {
 		printf("%s is the winner!\n", p.getName());
-		printf("The correct solution was: %s in the %s with the %s.\n", g.getCharacter().getValue(),
-				g.getLocation().getValue(), g.getWeapon().getValue());
+		printf("The correct solution was: %s\n", g.toString());
 		gameWon = true;
 		scan.close();
 	}
