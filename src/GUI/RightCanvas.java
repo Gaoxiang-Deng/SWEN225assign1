@@ -5,7 +5,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import cards.Card;
 import cards.CharacterCard;
-import cards.LocationCard;
 import cards.WeaponCard;
 
 import java.util.List;

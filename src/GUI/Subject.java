@@ -11,7 +11,6 @@ import board.Board.Direction;
 import cards.Card;
 import cards.CharacterCard;
 import cards.WeaponCard;
-import cards.WeaponCard.Weapons;
 import game.Player;
 
 public class Subject {

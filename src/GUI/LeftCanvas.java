@@ -2,9 +2,7 @@ package GUI;
 
 import javax.swing.*;
 
-import board.Board.Direction;
 
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 

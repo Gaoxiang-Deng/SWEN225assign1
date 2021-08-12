@@ -1,8 +1,5 @@
 package game;
 
-import java.util.ArrayList;
-import java.util.Scanner;
-
 import cards.*;
 
 public class Guess {

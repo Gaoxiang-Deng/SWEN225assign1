@@ -1,6 +1,5 @@
 package game;
 
-import java.sql.Time;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
-
-import javax.sound.midi.Receiver;
 
 import GUI.GUI;
 import GUI.Subject;
@@ -423,8 +420,7 @@ public class Game extends Subject {
 	 */
 	private void win(Player p, Guess g) {
 		printf("%s is the winner!\n", p.getName());
-		printf("The correct solution was: %s in the %s with the %s.\n", g.getCharacter().getValue(),
-				g.getLocation().getValue(), g.getWeapon().getValue());
+		printf("The correct solution was: %s\n", g.toString());
 		gameWon = true;
 		scan.close();
 	}
